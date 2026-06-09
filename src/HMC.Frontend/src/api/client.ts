@@ -26,7 +26,7 @@ export async function fetchMetricsHistory(
 }
 
 export async function triggerPingAll(): Promise<void> {
-  await fetch(`${BASE_URL}/network-test/ping-all`, { method: 'POST' });
+  await fetch(`${BASE_URL}/NetworkTest/ping-all`, { method: 'POST' });
 }
 
 export async function triggerIperf3(
@@ -41,5 +41,5 @@ export async function triggerIperf3(
     threads: String(threads),
     duration: String(duration),
   });
-  await fetch(`${BASE_URL}/network-test/iperf3?${params}`, { method: 'POST' });
+  await fetch(`${BASE_URL}/NetworkTest/iperf3?${params}`, { method: 'POST' });
 }
