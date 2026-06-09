@@ -36,10 +36,7 @@ builder.Services.AddSignalR(options =>
     {
         options.MaximumReceiveMessageSize = 512 * 1024; // 512KB for large snapshots
     })
-    .AddJsonProtocol(options =>
-    {
-        options.PayloadSerializerOptions.PropertyNamingPolicy = null;
-    });
+    .AddJsonProtocol();
 
 // EF Core + SQLite
 var dbPath = builder.Configuration.GetValue("Database:Path",

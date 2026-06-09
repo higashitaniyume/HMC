@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Card, Button, Select, Space, Table, Tag, message, InputNumber, Typography } from 'antd';
 import { ThunderboltOutlined, WifiOutlined } from '@ant-design/icons';
-import { useSignalR } from '../hooks/useSignalR';
+import { useSignalRContext } from '../hooks/SignalRContext';
 import * as api from '../api/client';
 import type { DeviceEntity, PingResult, Iperf3Result } from '../types';
 
@@ -17,7 +17,7 @@ interface TestResult {
 }
 
 export default function NetworkTestPanel({ devices }: Props) {
-  const { on } = useSignalR('/hub/agent');
+  const { on } = useSignalRContext();
   const [results, setResults] = useState<TestResult[]>([]);
   const [testing, setTesting] = useState(false);
   const [iperfSource, setIperfSource] = useState<string>('');

@@ -1,10 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useSignalR } from './useSignalR';
+import { useSignalRContext } from './SignalRContext';
 import * as api from '../api/client';
 import type { DeviceEntity } from '../types';
 
 export function useDevices() {
-  const { isConnected, on } = useSignalR('/hub/agent');
+  const { isConnected, on } = useSignalRContext();
   const [devices, setDevices] = useState<DeviceEntity[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -19,15 +19,15 @@ export function useDevices() {
     }
   }, []);
 
-  // Initial load
   useEffect(() => {
     loadDevices();
   }, [loadDevices]);
 
-  // Real-time updates
   useEffect(() => {
     const cleanup = on('DevicesUpdated', (updated: DeviceEntity[]) => {
-      setDevices(updated);
+      if (Array.isArray(updated)) {
+        setDevices(updated);
+      }
     });
     return cleanup;
   }, [on]);

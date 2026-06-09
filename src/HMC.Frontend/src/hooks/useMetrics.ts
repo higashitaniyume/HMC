@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useSignalR } from './useSignalR';
+import { useSignalRContext } from './SignalRContext';
 import type { MetricsSnapshot } from '../types';
 
 interface MetricsBuffer {
@@ -11,17 +11,16 @@ interface MetricsBuffer {
   lastSnapshot: MetricsSnapshot | null;
 }
 
-const MAX_POINTS = 60; // ~2 minutes at 2s interval
+const MAX_POINTS = 60;
 
 export function useMetrics() {
-  const { isConnected, on } = useSignalR('/hub/agent');
-  const [latestMetrics, setLatestMetrics] = useState<Map<string, MetricsSnapshot>>(
-    new Map()
-  );
+  const { isConnected, on } = useSignalRContext();
+  const [latestMetrics, setLatestMetrics] = useState<Map<string, MetricsSnapshot>>(new Map());
   const buffersRef = useRef<Map<string, MetricsBuffer>>(new Map());
 
   useEffect(() => {
     const cleanup = on('MetricsUpdated', (snapshot: MetricsSnapshot) => {
+      if (!snapshot?.deviceId) return;
       const dt = snapshot.deviceId;
 
       setLatestMetrics((prev) => {
@@ -30,29 +29,18 @@ export function useMetrics() {
         return next;
       });
 
-      // Update buffer for charts
       const buffers = buffersRef.current;
       if (!buffers.has(dt)) {
-        buffers.set(dt, {
-          cpu: [],
-          mem: [],
-          netIn: [],
-          netOut: [],
-          timestamps: [],
-          lastSnapshot: null,
-        });
+        buffers.set(dt, { cpu: [], mem: [], netIn: [], netOut: [], timestamps: [], lastSnapshot: null });
       }
       const buf = buffers.get(dt)!;
-      buf.cpu.push(snapshot.cpu.totalPercent);
-      buf.mem.push(snapshot.memory.percentUsed);
-      buf.netIn.push(snapshot.network.inBps);
-      buf.netOut.push(snapshot.network.outBps);
-      buf.timestamps.push(
-        new Date(snapshot.timestamp).toLocaleTimeString()
-      );
+      buf.cpu.push(snapshot?.cpu?.totalPercent ?? 0);
+      buf.mem.push(snapshot?.memory?.percentUsed ?? 0);
+      buf.netIn.push(snapshot?.network?.inBps ?? 0);
+      buf.netOut.push(snapshot?.network?.outBps ?? 0);
+      buf.timestamps.push(new Date(snapshot.timestamp).toLocaleTimeString());
       buf.lastSnapshot = snapshot;
 
-      // Trim
       if (buf.cpu.length > MAX_POINTS) {
         buf.cpu = buf.cpu.slice(-MAX_POINTS);
         buf.mem = buf.mem.slice(-MAX_POINTS);
