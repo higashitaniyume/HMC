@@ -55,6 +55,30 @@ public class DiscoveryService : BackgroundService
     {
         try
         {
+            // Prefer real LAN IPs over virtual/Docker ones
+            var host = Dns.GetHostEntry(Dns.GetHostName());
+            string? fallback = null;
+            foreach (var ip in host.AddressList)
+            {
+                if (ip.AddressFamily != AddressFamily.InterNetwork) continue;
+                var s = ip.ToString();
+                // Skip loopback, Docker, and benchmark/test ranges
+                if (s.StartsWith("127.") || s.StartsWith("198.18.") || s.StartsWith("198.19.")
+                    || s.StartsWith("169.254.") || s.StartsWith("172.17."))
+                {
+                    fallback ??= s;
+                    continue;
+                }
+                return s; // Best match
+            }
+            // Fallback to any non-loopback
+            if (fallback != null) return fallback;
+        }
+        catch { }
+
+        // Last resort: routing-based guess
+        try
+        {
             using var socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, 0);
             socket.Connect("8.8.8.8", 65530);
             if (socket.LocalEndPoint is IPEndPoint ep)
