@@ -40,3 +40,4 @@ installer/HMC.Agent.Installer/output/
 .env
 .env.local
 publish/
+wwwroot/

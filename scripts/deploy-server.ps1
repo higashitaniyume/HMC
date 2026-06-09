@@ -40,6 +40,7 @@ param(
 $ErrorActionPreference = "Stop"
 $root = Resolve-Path "$PSScriptRoot\.."
 $publishDir = "$root\publish\linux-x64"
+$frontendDir = "$root\src\HMC.Frontend"
 $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
 
 Write-Host @"
@@ -51,8 +52,24 @@ Write-Host @"
 
 "@ -ForegroundColor Cyan
 
-# ── 1. Publish ──
-Write-Host "[1/4] Publishing Server (linux-x64, self-contained)..." -ForegroundColor Yellow
+# ── 1. Build Frontend ──
+Write-Host "[1/5] Building Frontend..." -ForegroundColor Yellow
+Push-Location $frontendDir
+try {
+    $null = pnpm install --frozen-lockfile 2>&1
+    $null = pnpm build 2>&1
+    Write-Host "  -> Frontend built" -ForegroundColor Green
+} finally { Pop-Location }
+
+# ── 2. Publish Server ──
+Write-Host "[2/5] Publishing Server (linux-x64, self-contained)..." -ForegroundColor Yellow
+
+# Copy frontend dist to wwwroot before publish
+$wwwroot = "$root\src\HMC.Server\wwwroot"
+New-Item -ItemType Directory -Path $wwwroot -Force | Out-Null
+Copy-Item "$frontendDir\dist\*" $wwwroot -Recurse -Force
+Write-Host "  -> Frontend copied to wwwroot" -ForegroundColor Green
+
 dotnet publish "$root\src\HMC.Server\HMC.Server.csproj" `
     -c Release `
     -r linux-x64 `
@@ -62,8 +79,8 @@ dotnet publish "$root\src\HMC.Server\HMC.Server.csproj" `
 if ($LASTEXITCODE -ne 0) { throw "Publish failed" }
 Write-Host "  -> Published to $publishDir" -ForegroundColor Green
 
-# ── 2. Create server config ──
-Write-Host "[2/4] Creating remote config..." -ForegroundColor Yellow
+# ── 3. Create server config ──
+Write-Host "[3/5] Creating remote config..." -ForegroundColor Yellow
 $serverJson = @"
 {
   "Database": { "Path": "$RemotePath/data/hmc.db" },
@@ -114,7 +131,7 @@ if ($ServerPassword) {
 }
 
 # ── 4. Deploy ──
-Write-Host "[3/4] Deploying to $ServerHost..." -ForegroundColor Yellow
+Write-Host "[4/5] Deploying to $ServerHost..." -ForegroundColor Yellow
 
 # Stop existing service
 Write-Host "  -> Stopping remote service..."
@@ -158,7 +175,7 @@ if ($sshPrefix) {
 }
 
 # ── 5. Verify ──
-Write-Host "[4/4] Verifying deployment..." -ForegroundColor Yellow
+Write-Host "[5/5] Verifying deployment..." -ForegroundColor Yellow
 Start-Sleep -Seconds 2
 
 if ($sshPrefix) {

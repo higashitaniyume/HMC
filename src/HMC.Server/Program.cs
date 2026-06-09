@@ -85,5 +85,18 @@ app.MapHub<AgentHub>("/hub/agent");
 // Health check
 app.MapGet("/health", () => Results.Ok(new { Status = "Healthy", Timestamp = DateTime.UtcNow }));
 
+// ===== Serve Frontend (if present in wwwroot) =====
+var wwwroot = Path.Combine(app.Environment.ContentRootPath, "wwwroot");
+if (Directory.Exists(wwwroot))
+{
+    app.UseDefaultFiles();
+    app.UseStaticFiles();
+
+    // SPA fallback: non-API routes → index.html
+    app.MapFallbackToFile("index.html");
+
+    Log.Information("Serving frontend from {Wwwroot}", wwwroot);
+}
+
 Log.Information("HMC Server starting, DB={DbPath}", dbPath);
 app.Run();
