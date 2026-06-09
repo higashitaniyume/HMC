@@ -11,10 +11,8 @@ public class Program
 {
     public static async Task Main(string[] args)
     {
-        // Parse command line args
         bool selfTest = args.Contains("--self-test");
 
-        // Log path: %PROGRAMDATA%/HMC/Agent/logs/
         var logDir = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
             "HMC", "Agent", "logs");
@@ -45,7 +43,6 @@ public class Program
                 return;
             }
 
-            // Try UDP discovery if no server URL is explicitly configured
             var tempConfig = new ConfigurationBuilder()
                 .SetBasePath(AppContext.BaseDirectory)
                 .AddJsonFile("appsettings.json", optional: true)
@@ -61,7 +58,6 @@ public class Program
                 var discovered = await ServerDiscovery.DiscoverAsync(discoveryLogger);
                 if (discovered != null)
                 {
-                    // Inject discovered URL into config
                     args = args.Append($"--Agent:ServerUrl={discovered}").ToArray();
                     Log.Information("Using discovered server: {Url}", discovered);
                 }
@@ -83,7 +79,6 @@ public class Program
                 })
                 .Build();
 
-            // Start SignalR connection before workers begin
             var signalR = host.Services.GetRequiredService<SignalRClientService>();
             await signalR.StartAsync();
 
@@ -99,16 +94,32 @@ public class Program
         }
     }
 
+    private static string ResolveDeviceId(IConfiguration config)
+    {
+        var explicitId = config.GetValue<string>("Agent:DeviceId");
+        if (!string.IsNullOrWhiteSpace(explicitId))
+            return explicitId;
+
+        var idFile = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
+            "HMC", "Agent", "device.id");
+
+        if (File.Exists(idFile))
+        {
+            var persisted = File.ReadAllText(idFile).Trim();
+            if (!string.IsNullOrWhiteSpace(persisted))
+                return persisted;
+        }
+
+        var newId = Guid.NewGuid().ToString("D");
+        Directory.CreateDirectory(Path.GetDirectoryName(idFile));
+        File.WriteAllText(idFile, newId);
+        return newId;
+    }
+
     private static void ConfigureServices(IServiceCollection services, IConfiguration config)
     {
-        var deviceId = config.GetValue("Agent:DeviceId",
-            string.IsNullOrWhiteSpace(config.GetValue<string>("Agent:DeviceId"))
-                ? Guid.NewGuid().ToString("D")
-                : config.GetValue<string>("Agent:DeviceId")!);
-
-        if (string.IsNullOrWhiteSpace(deviceId))
-            deviceId = Guid.NewGuid().ToString("D");
-
+        var deviceId = ResolveDeviceId(config);
         var deviceName = config.GetValue("Agent:DeviceName", Environment.MachineName);
         if (string.IsNullOrWhiteSpace(deviceName))
             deviceName = Environment.MachineName;
@@ -116,25 +127,17 @@ public class Program
         var serverUrl = config.GetValue("Agent:ServerUrl", "http://localhost:5000")!;
         var metricsIntervalMs = config.GetValue("Agent:MetricsIntervalMs", 2000);
 
-        // Services
         services.AddSingleton<IPerformanceCollector, PerformanceCollector>();
         services.AddSingleton<INetworkMonitor, NetworkMonitor>();
         services.AddSingleton<ISystemInfoCollector, SystemInfoCollector>();
         services.AddSingleton<IPingTestService, PingTestService>();
         services.AddSingleton<IIperf3Service, Iperf3Service>();
 
-        // SignalR client (wired up in callbacks below)
         services.AddSingleton(sp =>
         {
             var logger = sp.GetRequiredService<ILogger<SignalRClientService>>();
-            var signalR = new SignalRClientService(
-                logger,
-                sp,
-                serverUrl,
-                deviceId,
-                deviceName);
+            var signalR = new SignalRClientService(logger, sp, serverUrl, deviceId, deviceName);
 
-            // Wire up callbacks
             signalR.OnRunPingTest = async (targets) =>
             {
                 var pingService = sp.GetRequiredService<IPingTestService>();
@@ -168,7 +171,6 @@ public class Program
             return signalR;
         });
 
-        // Worker
         services.AddHostedService(sp =>
         {
             var logger = sp.GetRequiredService<ILogger<MetricsCollectionWorker>>();
@@ -186,7 +188,6 @@ public class Program
         var testsPassed = 0;
         var testsFailed = 0;
 
-        // Test iPerf3
         try
         {
             Log.Information("  [TEST] iPerf3 exists...");
@@ -203,7 +204,6 @@ public class Program
             testsFailed++;
         }
 
-        // Test WMI CPU
         try
         {
             Log.Information("  [TEST] WMI CPU query...");
@@ -220,7 +220,6 @@ public class Program
             testsFailed++;
         }
 
-        // Test Ping
         try
         {
             Log.Information("  [TEST] Ping 127.0.0.1...");
