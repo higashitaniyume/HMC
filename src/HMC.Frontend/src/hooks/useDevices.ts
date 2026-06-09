@@ -24,7 +24,7 @@ export function useDevices() {
   }, [loadDevices]);
 
   useEffect(() => {
-    const cleanup = on('DevicesUpdated', (updated: DeviceEntity[]) => {
+    const cleanup = on('devicesupdated', (updated: DeviceEntity[]) => {
       if (Array.isArray(updated)) {
         setDevices(updated);
       }

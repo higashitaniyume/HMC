@@ -19,7 +19,7 @@ export function useMetrics() {
   const buffersRef = useRef<Map<string, MetricsBuffer>>(new Map());
 
   useEffect(() => {
-    const cleanup = on('MetricsUpdated', (snapshot: MetricsSnapshot) => {
+    const cleanup = on('metricsupdated', (snapshot: MetricsSnapshot) => {
       if (!snapshot?.deviceId) return;
       const dt = snapshot.deviceId;
 
