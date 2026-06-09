@@ -43,10 +43,10 @@ export default function SystemOverviewPanel({ overview }: Props) {
         </Descriptions>
       </Card>
 
-      {overview.gpus.length > 0 && (
+      {(overview.gpus?.length ?? 0) > 0 && (
         <Card title="GPUs" size="small" style={{ marginBottom: 16 }}>
           <Table
-            dataSource={overview.gpus}
+            dataSource={overview.gpus || []}
             rowKey="name"
             size="small"
             pagination={false}
@@ -65,10 +65,10 @@ export default function SystemOverviewPanel({ overview }: Props) {
         </Card>
       )}
 
-      {overview.disks.length > 0 && (
+      {(overview.disks?.length ?? 0) > 0 && (
         <Card title="Disks" size="small" style={{ marginBottom: 16 }}>
           <Table
-            dataSource={overview.disks}
+            dataSource={overview.disks || []}
             rowKey="model"
             size="small"
             pagination={false}
@@ -99,10 +99,10 @@ export default function SystemOverviewPanel({ overview }: Props) {
         </Card>
       )}
 
-      {overview.networkAdapters.length > 0 && (
+      {(overview.networkAdapters?.length ?? 0) > 0 && (
         <Card title="Network Adapters" size="small">
           <Table
-            dataSource={overview.networkAdapters}
+            dataSource={overview.networkAdapters || []}
             rowKey="name"
             size="small"
             pagination={false}
