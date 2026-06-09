@@ -29,6 +29,13 @@ logs/
 .DS_Store
 Thumbs.db
 
+# Installer
+installer/HMC.Agent.Installer/publish/
+installer/HMC.Agent.Installer/output/
+*.msi
+*.wixpdb
+*.cab
+
 # Env
 .env
 .env.local
