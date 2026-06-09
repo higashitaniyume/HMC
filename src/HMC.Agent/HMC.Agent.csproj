@@ -22,4 +22,19 @@
   <ItemGroup>
     <ProjectReference Include="..\HMC.Shared\HMC.Shared.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Update="tools\cygcrypto-3.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="tools\cygwin1.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="tools\cygz.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="tools\iperf3.exe">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>

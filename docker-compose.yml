@@ -6,6 +6,7 @@ services:
     container_name: hmc-server
     ports:
       - "5000:8080"
+      - "9556:9556/udp"     # UDP discovery
     volumes:
       - ./data:/app/data
       - server-logs:/var/log/hmc
@@ -13,17 +14,24 @@ services:
     environment:
       - HMC_SERVER_IP=${HMC_SERVER_IP:-}
       - ASPNETCORE_ENVIRONMENT=Production
+    # For UDP broadcast discovery to work across the LAN, use host network mode.
+    # If you don't need discovery, comment this out and use explicit ServerUrl in agents.
+    # network_mode: host
 
-  frontend:
-    build:
-      context: src/HMC.Frontend
-      dockerfile: Dockerfile
-    container_name: hmc-frontend
-    ports:
-      - "80:80"
-    depends_on:
-      - server
-    restart: unless-stopped
+  # Optional: standalone frontend with nginx.
+  # The server already serves the React app from wwwroot on port 5000.
+  # Uncomment below if you prefer a separate nginx frontend.
+  #
+  # frontend:
+  #   build:
+  #     context: src/HMC.Frontend
+  #     dockerfile: Dockerfile
+  #   container_name: hmc-frontend
+  #   ports:
+  #     - "80:80"
+  #   depends_on:
+  #     - server
+  #   restart: unless-stopped
 
 volumes:
   server-logs:
