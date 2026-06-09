@@ -85,6 +85,7 @@ $serverJson = @"
 {
   "Database": { "Path": "$RemotePath/data/hmc.db" },
   "AllowedHosts": "*",
+  "Discovery": { "AdvertiseIp": "$ServerHost" },
   "Serilog": {
     "MinimumLevel": { "Default": "Information", "Override": { "Microsoft": "Warning" } }
   }
