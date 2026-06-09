@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/HMC.Agent/HMC.Agent.csproj" />
+    <Project Path="src/HMC.Server/HMC.Server.csproj" />
+    <Project Path="src/HMC.Shared/HMC.Shared.csproj" />
+  </Folder>
+  <Folder Name="/test/">
+    <Project Path="test/HMC.Agent.Tests/HMC.Agent.Tests.csproj" />
+    <Project Path="test/HMC.Server.Tests/HMC.Server.Tests.csproj" />
+  </Folder>
+</Solution>

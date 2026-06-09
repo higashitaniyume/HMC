@@ -1,0 +1,35 @@
+# Auto-detect text files, convert to LF on commit
+* text=auto
+
+# CS/TSX/JSON/Config files
+*.cs text diff=csharp
+*.csproj text
+*.sln text
+*.slnx text
+*.json text
+*.ts text
+*.tsx text
+*.js text
+*.yml text
+*.yaml text
+*.xml text
+*.md text
+*.config text
+*.conf text
+*.html text
+*.css text
+
+# Binary
+*.exe binary
+*.dll binary
+*.db binary
+*.png binary
+*.jpg binary
+*.ico binary
+
+# Docker
+Dockerfile text
+.dockerignore text
+
+# Shell scripts (always LF)
+*.sh text eol=lf

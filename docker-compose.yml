@@ -1,0 +1,29 @@
+services:
+  server:
+    build:
+      context: .
+      dockerfile: src/HMC.Server/Dockerfile
+    container_name: hmc-server
+    ports:
+      - "5000:8080"
+    volumes:
+      - ./data:/app/data
+      - server-logs:/var/log/hmc
+    restart: unless-stopped
+    environment:
+      - HMC_SERVER_IP=${HMC_SERVER_IP:-}
+      - ASPNETCORE_ENVIRONMENT=Production
+
+  frontend:
+    build:
+      context: src/HMC.Frontend
+      dockerfile: Dockerfile
+    container_name: hmc-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - server
+    restart: unless-stopped
+
+volumes:
+  server-logs:
