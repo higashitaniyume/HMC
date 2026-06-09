@@ -39,3 +39,4 @@ installer/HMC.Agent.Installer/output/
 # Env
 .env
 .env.local
+publish/
