@@ -1,6 +1,7 @@
 using HMC.Agent.Services;
 using HMC.Agent.Workers;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Serilog.Events;
 
@@ -81,6 +82,10 @@ public class Program
                     ConfigureServices(services, context.Configuration);
                 })
                 .Build();
+
+            // Start SignalR connection before workers begin
+            var signalR = host.Services.GetRequiredService<SignalRClientService>();
+            await signalR.StartAsync();
 
             await host.RunAsync();
         }
