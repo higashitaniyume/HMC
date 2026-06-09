@@ -1,6 +1,6 @@
-# HMC — Host Monitoring Center
+# HMC — HIKARIHOME Monitoring Center
 
-> 局域网设备监控系统 · LAN Host Monitoring System
+> 局域网设备监控系统 · LAN HIKARIHOME Monitoring System
 
 [中文版](#chinese) | [English](#english)
 
@@ -578,7 +578,7 @@ dotnet test
 
 ### Overview
 
-HMC is a LAN host monitoring system consisting of a central server, multiple Windows agents, and a web dashboard. It provides real-time performance monitoring, network testing, and system information collection.
+HMC is a LAN HIKARIHOME monitoring system consisting of a central server, multiple Windows agents, and a web dashboard. It provides real-time performance monitoring, network testing, and system information collection.
 
 ### Architecture
 
