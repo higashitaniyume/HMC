@@ -124,10 +124,13 @@ export default function NetworkTestPanel({ devices }: Props) {
                   style={{ width: 180 }}
                   value={iperfSource || undefined}
                   onChange={setIperfSource}
-                  options={onlineDevices.map((d) => ({
-                    value: d.deviceId,
-                    label: `${d.name} (${d.ipAddress})`,
-                  }))}
+                  options={[
+                    { value: '_server_', label: '🖥 Server (this machine)' },
+                    ...onlineDevices.map((d) => ({
+                      value: d.deviceId,
+                      label: `${d.name} (${d.ipAddress})`,
+                    })),
+                  ]}
                 />
                 <span>→</span>
                 <Select
@@ -135,10 +138,13 @@ export default function NetworkTestPanel({ devices }: Props) {
                   style={{ width: 180 }}
                   value={iperfTarget || undefined}
                   onChange={setIperfTarget}
-                  options={onlineDevices.map((d) => ({
-                    value: d.deviceId,
-                    label: `${d.name} (${d.ipAddress})`,
-                  }))}
+                  options={[
+                    { value: '_server_', label: '🖥 Server (this machine)' },
+                    ...onlineDevices.map((d) => ({
+                      value: d.deviceId,
+                      label: `${d.name} (${d.ipAddress})`,
+                    })),
+                  ]}
                 />
                 <span>Threads:</span>
                 <InputNumber min={1} max={16} value={threads} onChange={(v) => setThreads(v || 4)} />

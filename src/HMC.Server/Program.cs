@@ -52,6 +52,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddHostedService<DiscoveryService>();
 builder.Services.AddSingleton<DeviceManager>();
 builder.Services.AddSingleton<MetricsStoreService>();
+builder.Services.AddSingleton<ServerIperf3Service>();
 builder.Services.AddSingleton<NetworkTestOrchestrator>();
 
 // CORS (for development; in production, Nginx handles this)
