@@ -1,5 +1,6 @@
 using HMC.Agent.Services;
 using HMC.Agent.Workers;
+using Microsoft.Extensions.Configuration;
 using Serilog;
 using Serilog.Events;
 
@@ -41,6 +42,32 @@ public class Program
             {
                 await RunSelfTest();
                 return;
+            }
+
+            // Try UDP discovery if no server URL is explicitly configured
+            var tempConfig = new ConfigurationBuilder()
+                .SetBasePath(AppContext.BaseDirectory)
+                .AddJsonFile("appsettings.json", optional: true)
+                .AddEnvironmentVariables("HMC_")
+                .Build();
+
+            var configuredUrl = tempConfig.GetValue<string>("Agent:ServerUrl");
+            if (string.IsNullOrWhiteSpace(configuredUrl) || configuredUrl == "http://localhost:5000")
+            {
+                Log.Information("ServerUrl not configured, trying UDP discovery...");
+                using var loggerFactory = new Serilog.Extensions.Logging.SerilogLoggerFactory(Log.Logger);
+                var discoveryLogger = loggerFactory.CreateLogger("ServerDiscovery");
+                var discovered = await ServerDiscovery.DiscoverAsync(discoveryLogger);
+                if (discovered != null)
+                {
+                    // Inject discovered URL into config
+                    args = args.Append($"--Agent:ServerUrl={discovered}").ToArray();
+                    Log.Information("Using discovered server: {Url}", discovered);
+                }
+                else
+                {
+                    Log.Warning("Discovery failed, falling back to http://localhost:5000");
+                }
             }
 
             var host = Host.CreateDefaultBuilder(args)

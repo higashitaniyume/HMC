@@ -49,6 +49,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite($"Data Source={dbPath}"));
 
 // Application services
+builder.Services.AddHostedService<DiscoveryService>();
 builder.Services.AddSingleton<DeviceManager>();
 builder.Services.AddSingleton<MetricsStoreService>();
 builder.Services.AddSingleton<NetworkTestOrchestrator>();
