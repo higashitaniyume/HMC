@@ -61,6 +61,9 @@ public class SignalRClientService : IAsyncDisposable
             {
                 options.Headers.Add("X-Device-Id", _deviceId);
                 options.Headers.Add("X-Device-Name", Uri.EscapeDataString(_deviceName));
+                // Support large messages for process/TCP lists
+                options.TransportMaxBufferSize = 1024 * 1024;
+                options.ApplicationMaxBufferSize = 1024 * 1024;
             })
             .WithAutomaticReconnect(new RetryPolicy(_log))
             .AddJsonProtocol()

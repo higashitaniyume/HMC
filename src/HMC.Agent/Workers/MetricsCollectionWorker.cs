@@ -16,6 +16,7 @@ public class MetricsCollectionWorker : BackgroundService
     private readonly ISystemInfoCollector _systemInfo;
     private readonly string _deviceId;
     private readonly int _intervalMs;
+    private int _cycleCount;
 
     public MetricsCollectionWorker(
         ILogger<MetricsCollectionWorker> log,
@@ -76,9 +77,13 @@ public class MetricsCollectionWorker : BackgroundService
                 // GPU (non-blocking, may be null)
                 snapshot.Gpu = _perfCollector.GetGpuMetrics();
 
-                // TCP connections (every 5 cycles ~= 10s)
-                snapshot.TcpConnections = _networkMonitor.GetTcpConnections();
-                snapshot.Processes = _systemInfo.GetProcesses();
+                // Heavy data: only send every 10 cycles (~20s) to avoid message size overflow
+                _cycleCount++;
+                if (_cycleCount % 10 == 0)
+                {
+                    snapshot.TcpConnections = _networkMonitor.GetTcpConnections();
+                    snapshot.Processes = _systemInfo.GetProcesses();
+                }
 
                 // Push via SignalR
                 await _signalR.PushMetricsAsync(snapshot);

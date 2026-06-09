@@ -32,7 +32,10 @@ builder.Host.UseSerilog();
 
 // ===== Services =====
 builder.Services.AddControllers();
-builder.Services.AddSignalR()
+builder.Services.AddSignalR(options =>
+    {
+        options.MaximumReceiveMessageSize = 512 * 1024; // 512KB for large snapshots
+    })
     .AddJsonProtocol(options =>
     {
         options.PayloadSerializerOptions.PropertyNamingPolicy = null;
